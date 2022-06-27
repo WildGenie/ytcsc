@@ -14,14 +14,13 @@ _test_path = '../../datasets/split/test.csv'
 _val_path ='../../datasets/split/val.csv'
 
 def get_glove_embeddings(word_index):
-    glove_vectors = open(os.path.join(_glove_vectors), encoding="utf8")
-    embeddings_index = {}
-    for line in glove_vectors:
-        values = line.split()
-        word = values[0]
-        coefs = np.asarray(values[1:], dtype='float32')
-        embeddings_index[word] = coefs
-    glove_vectors.close()
+    with open(os.path.join(_glove_vectors), encoding="utf8") as glove_vectors:
+        embeddings_index = {}
+        for line in glove_vectors:
+            values = line.split()
+            word = values[0]
+            coefs = np.asarray(values[1:], dtype='float32')
+            embeddings_index[word] = coefs
     embedding_matrix = np.zeros((len(word_index) + 1, 200))
     for word, i in word_index.items():
         embedding_vector = embeddings_index.get(word)
@@ -38,7 +37,7 @@ def get_data():
     test = pd.read_csv(_test_path)
     val = pd.read_csv(_val_path)
     df = pd.concat([train, test, val], ignore_index=True)
-    sentences = [[word for word in str(body).split()] for body in df.body]
+    sentences = [list(str(body).split()) for body in df.body]
 
     #Set up tokenizer
     tokenizer = Tokenizer()
@@ -55,7 +54,7 @@ def get_data():
     X = sequence.pad_sequences(X)
 
     # Prepare train data
-    X_train = X[0:len(train)]
+    X_train = X[:len(train)]
     y_train = train.rating.values
 
     # Prepare test data
